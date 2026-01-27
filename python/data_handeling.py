@@ -8,7 +8,7 @@ def process_all_docx_files(path):
     docx_dir = Path(path)
     # Find all the docx files in the directory
     docx_files = list(docx_dir.glob("**/*.docx"))
-    print(f"Found {len(docx_files)} DOCX files to process")
+    # print(f"Found {len(docx_files)} DOCX files to process")
 
     # Process each DOCX file
     for docx_file in docx_files:
@@ -20,15 +20,15 @@ def process_all_docx_files(path):
                 doc.metadata["source"] = str(docx_file)
                 doc.metadata["file_type"] = "docx"
             all_documents.extend(documents)
-            print(f"Processed {docx_file.name}, found {len(documents)} documents")
+            # print(f"Processed {docx_file.name}, found {len(documents)} documents")
         except Exception as e:
             print(f"Error processing {docx_file.name}: {e}")
 
-    print(f"Successfully processed {len(all_documents)} documents")
+    # print(f"Successfully processed {len(all_documents)} documents")
     return all_documents
 
 all_documents = process_all_docx_files("data")
-print(all_documents)
+# print(all_documents)
 def split_documents(documents,chunk_size=1000,chunk_overlap=200):
     """Split documents into smaller chunks for better RAG performance"""
     text_splitter = RecursiveCharacterTextSplitter(
@@ -38,13 +38,9 @@ def split_documents(documents,chunk_size=1000,chunk_overlap=200):
         separators=["\n\n", "\n", " ", ""]
     )
     split_docs = text_splitter.split_documents(documents)
-    print(f"Split {len(documents)} documents into {len(split_docs)} chunks")
+    # print(f"Split {len(documents)} documents into {len(split_docs)} chunks")
     
     # Show example of a chunk
-    if split_docs:
-        print(f"\nExample chunk:")
-        print(f"Content: {split_docs[0].page_content[:200]}...")
-        print(f"Metadata: {split_docs[0].metadata}")
     
     return split_docs
 import numpy as np
@@ -62,9 +58,9 @@ class EmbeddingManager:
 
     def load_model(self):
         try:
-            print(f"Loading model: {self.model_name}")
+            # print(f"Loading model: {self.model_name}")
             self.model = SentenceTransformer(self.model_name)
-            print("Model loaded successfully")
+            # print("Model loaded successfully")
         except Exception as e:
             print(f"Error loading model: {e}")
     
@@ -72,7 +68,7 @@ class EmbeddingManager:
         if self.model is None:
             raise ValueError("Model is not loaded")
         embeddings = self.model.encode(text, show_progress_bar=True)
-        print("embedding shape", embeddings.shape)
+        # print("embedding shape", embeddings.shape)
         return embeddings
 
 # initalize embedding manager
@@ -94,8 +90,8 @@ class VectorStore:
                 name=self.collection_name,
                 metadata={"description": "Collection of document embeddings"}
             )
-            print(f"Vector store initialized. Collection: {self.collection_name}")
-            print(f"Existing documents in collection: {self.collection.count()}")
+            # print(f"Vector store initialized. Collection: {self.collection_name}")
+            # print(f"Existing documents in collection: {self.collection.count()}")
         except Exception as e:
             print(f"Error initializing vector store: {e}")
             raise
@@ -104,7 +100,7 @@ class VectorStore:
         if len(documents) != len(embeddings):
             raise ValueError("Number of documents must match number of embeddings")
 
-        print(f"Adding {len(documents)} documents to vector store...")
+        # print(f"Adding {len(documents)} documents to vector store...")
 
         # Prepare data for chromadb
         ids = []
@@ -137,34 +133,24 @@ class VectorStore:
                 metadatas=metadatas,
                 documents=document_texts
             )
-            print(f"Successfully added {len(documents)} documents to vector store")
-            print(f"Total documents in collection: {self.collection.count()}")
+            # print(f"Successfully added {len(documents)} documents to vector store")
+            # print(f"Total documents in collection: {self.collection.count()}")
 
         except Exception as e:
             print(f"Error adding documents to vector store: {e}")
             raise
 
 vectorstore = VectorStore()
-vectorstore
+
 # Process documents and add to vector store
 # 1. Split documents into chunks
-split_docs = split_documents(all_documents)
+chunks = split_documents(all_documents)
 
 # 2. Generate embeddings for all chunks
-print(f"\nGenerating embeddings for {len(split_docs)} chunks...")
-texts = [doc.page_content for doc in split_docs]
+texts = [doc.page_content for doc in chunks]
 embeddings = embedding_manager.generate_embedding(texts)
 
 # 3. Add documents and embeddings to vector store
-vectorstore.add_documents(split_docs, embeddings)
-
-print(f"\nPipeline complete! Total documents in store: {vectorstore.collection.count()}")
-chunks = split_documents(all_documents)
-chunks
-# convert the text into embeddings 
-texts = [doc.page_content for doc in chunks]
-embeddings = embedding_manager.generate_embedding(texts)
-# store in vector database
 vectorstore.add_documents(chunks, embeddings)
 # retrieve pipeline from vector store   
 
@@ -174,7 +160,7 @@ class RAGRetriever:
         self.embedding_manager = embedding_manager
 
     def retrieve(self, query, top_k=5, score_threshold=0.0, verbose=True):
-        print(f"Retrieving top {top_k} documents for query: {query}")
+        # print(f"Retrieving top {top_k} documents for query: {query}")
         # generate query embedding
         query_embedding = self.embedding_manager.generate_embedding([query])[0]
         # search in vector store

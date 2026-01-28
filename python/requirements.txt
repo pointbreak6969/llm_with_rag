@@ -1,6 +1,0 @@
-langchain 
-langchain-core
-langchain-community
-sentence-transformers
-chromadb
-faiss-cpu

@@ -103,3 +103,7 @@ print("\n=== Response with RAG ===")
 print(f"Topic: {llm_response_with_rag.topic}")
 print(f"\nAnswer: {llm_response_with_rag.answer}")
 print(f"\nSources: {llm_response_with_rag.sources}")
+
+
+if __name__ == "__main__":
+    pass

@@ -1,10 +1,14 @@
-faiss-cpu
+flask
+flask-cors
 langchain
 langchain-core
 langchain-community
+langchain-ollama
 docx2txt
 langchain-text-splitters
 python-dotenv
 pymupdf
 sentence-transformers
 numpy
+faiss-cpu
+Flask

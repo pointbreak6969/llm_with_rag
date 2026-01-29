@@ -86,7 +86,7 @@ export default function Chat() {
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Image src="/logo.jpg" alt="jassaiPass Logo" width={32} height={32} />
+              <Image src="/logo.png" alt="jassaiPass Logo" width={32} height={32} />
               <span className="text-2xl font-bold text-foreground">jassaiPass</span>
             </div>
             {!session?.user && (
@@ -98,11 +98,7 @@ export default function Chat() {
           <div className="flex items-center justify-between mt-2">
             <p className="text-sm text-slate-600">
               Ask questions about your course materials <br/>
-              {session?.user ? <span> as {session.user.email}</span> : 
-                <span>
-                no logged in
-                </span>
-              }
+              
             </p>
             {session?.user && (
               <Button

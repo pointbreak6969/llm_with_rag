@@ -15,11 +15,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // If user is not logged in and trying to access protected routes, redirect to login
-  const protectedRoutes = ["/chat"];
-  if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
+ 
   return NextResponse.next();
 }
 

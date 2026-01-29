@@ -20,7 +20,7 @@ export default function Pricing() {
     },
     {
         name: 'Pro',
-        price: '$19 / mo',
+        price: '$4.99 / mo',
         desc: 'Per Student',
         features: [
             'Everything in Free',

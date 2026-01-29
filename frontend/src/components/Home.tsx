@@ -31,7 +31,9 @@ export default function Home() {
             and resources provided by your institution.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="gap-2 px-10 py-8">
+            <Button size="lg" className="gap-2 px-10 py-8" onClick={()=>{
+              router.push("/chat")
+            }}>
               Try JasaiPass <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
@@ -284,7 +286,9 @@ export default function Home() {
           their exams.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button size="lg" className="gap-2">
+          <Button size="lg" className="gap-2" onClick={()=>{
+            router.push("/chat")
+          }}>
             Start Free Trial <ArrowRight className="w-4 h-4" />
           </Button>
           <Button

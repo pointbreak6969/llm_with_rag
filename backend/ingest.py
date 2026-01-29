@@ -8,7 +8,7 @@ import pickle
 import os
 import numpy as np
 import requests
-
+from langchain_ollama import OllamaEmbeddings
 
 FAISS_INDEX_PATH = "./faiss.index"
 DOCSTORE_PATH = "./documents.pkl"
@@ -55,8 +55,8 @@ def split_documents(documents, chunk_size=1000, chunk_overlap=200):
 
 
 def generate_embeddings(texts):
-    model = SentenceTransformer(MODEL_NAME)
-    embeddings = model.encode(texts, show_progress_bar=True)
+    embeddings_model = OllamaEmbeddings(model="nomic-embed-text:v1.5")
+    embeddings = embeddings_model.embed_documents(texts)
     return np.array(embeddings).astype("float32")
 
 
@@ -96,11 +96,13 @@ def load_faiss():
     return index, docs
 
 
-def search(query, k=5):
-    model = SentenceTransformer(MODEL_NAME)
+def search(query, k=2):
+    # Use Ollama embeddings instead of SentenceTransformer
+    embeddings_model = OllamaEmbeddings(model="nomic-embed-text:v1.5")
     index, docs = load_faiss()
 
-    q_emb = model.encode([query]).astype("float32")
+    # Generate query embedding using Ollama
+    q_emb = np.array([embeddings_model.embed_query(query)]).astype("float32")
 
     distances, indices = index.search(q_emb, k)
 

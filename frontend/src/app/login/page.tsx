@@ -47,7 +47,7 @@ export default function Login() {
           : "Login failed. Please try again.");
       } else if (result?.ok) {
         toast.success("Logged in successfully!");
-        router.push("/");
+        router.push("/chat");
         router.refresh();
       }
     } catch (error: any) {
@@ -62,7 +62,7 @@ export default function Login() {
       <Head>
         <title>Login | Dashboard</title>
       </Head>
-      <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-purple-50/50 dark:to-purple-950/30 overflow-hidden flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="relative min-h-screen bg-linear-to-br from-background via-background to-purple-50/50 dark:to-purple-950/30 overflow-hidden flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-30 dark:opacity-20">
           <div className="absolute top-20 left-20 w-72 h-72 bg-purple-200 dark:bg-purple-800 rounded-full blur-3xl"></div>
@@ -76,7 +76,7 @@ export default function Login() {
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
               Sign{" "}
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
                 In
               </span>
             </h2>
@@ -88,7 +88,7 @@ export default function Login() {
 
         <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
           <div className="relative group">
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
+            <div className="absolute -inset-4 bg-linear-to-r from-purple-500 via-blue-500 to-pink-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
             <div className="relative bg-background/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-border p-8">
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 <div className="space-y-2">
@@ -171,7 +171,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">

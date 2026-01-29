@@ -7,8 +7,7 @@ import uuid
 import pickle
 import os
 import numpy as np
-
-
+from langchain_ollama import OllamaEmbeddings
 FAISS_INDEX_PATH = "./faiss.index"
 DOCSTORE_PATH = "./documents.pkl"
 DOCX_FAISS_INDEX_PATH = "./faiss_docx.index"
@@ -73,7 +72,7 @@ def process_all_docx(docx_directory):
 
 # -------- COMMON FUNCTIONS --------
 
-def split_documents(documents, chunk_size=1000, chunk_overlap=200):
+def split_documents(documents, chunk_size=2000, chunk_overlap=300):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
@@ -86,8 +85,8 @@ def split_documents(documents, chunk_size=1000, chunk_overlap=200):
 
 
 def generate_embeddings(texts):
-    model = SentenceTransformer(MODEL_NAME)
-    embeddings = model.encode(texts, show_progress_bar=True)
+    model = OllamaEmbeddings(model="nomic-embed-text:v1.5")
+    embeddings = model.embed_documents(texts)
     return np.array(embeddings).astype("float32")
 
 
@@ -127,12 +126,12 @@ def load_faiss(index_path, docstore_path):
     return index, docs
 
 
-def search(query, k=5, index_path=FAISS_INDEX_PATH, docstore_path=DOCSTORE_PATH):
-    model = SentenceTransformer(MODEL_NAME)
-    index, docs = load_faiss(index_path, docstore_path)
+def search_pdf_only(query, k=2):
+    """Search only PDF documents"""
+    embeddings_model = OllamaEmbeddings(model="nomic-embed-text:v1.5")
+    index, docs = load_faiss(FAISS_INDEX_PATH, DOCSTORE_PATH)
 
-    q_emb = model.encode([query]).astype("float32")
-
+    q_emb = np.array([embeddings_model.embed_query(query)]).astype("float32")
     distances, indices = index.search(q_emb, k)
 
     results = []
@@ -141,6 +140,42 @@ def search(query, k=5, index_path=FAISS_INDEX_PATH, docstore_path=DOCSTORE_PATH)
 
     return results
 
+
+def search_all(query, k=2):
+    """Search both PDF and DOCX documents"""
+    embeddings_model = OllamaEmbeddings(model="nomic-embed-text:v1.5")
+    
+    # Search PDFs
+    pdf_index, pdf_docs = load_faiss(FAISS_INDEX_PATH, DOCSTORE_PATH)
+    q_emb = np.array([embeddings_model.embed_query(query)]).astype("float32")
+    pdf_distances, pdf_indices = pdf_index.search(q_emb, k)
+    
+    # Search DOCX
+    docx_index, docx_docs = load_faiss(DOCX_FAISS_INDEX_PATH, DOCX_DOCSTORE_PATH)
+    docx_distances, docx_indices = docx_index.search(q_emb, k)
+    
+    # Combine results with distances
+    combined = []
+    for i, idx in enumerate(pdf_indices[0]):
+        combined.append({
+            "doc": pdf_docs[idx],
+            "distance": pdf_distances[0][i],
+            "type": "pdf"
+        })
+    
+    for i, idx in enumerate(docx_indices[0]):
+        combined.append({
+            "doc": docx_docs[idx],
+            "distance": docx_distances[0][i],
+            "type": "docx"
+        })
+    
+    # Sort by distance (lower is better) and get top k
+    combined.sort(key=lambda x: x["distance"])
+    results = [item["doc"] for item in combined[:k]]
+    
+    return results
+    
 
 # -------- MAIN INGEST --------
 

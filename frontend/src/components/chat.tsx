@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import ReactMarkdown from "react-markdown";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Send, Loader2 } from "lucide-react";
-
+import { LogOut } from "lucide-react";
+import { useRouter } from 'next/navigation'
+import { signOut } from "next-auth/react";
 interface Message {
   id: string;
   type: "user" | "assistant";
@@ -17,15 +19,16 @@ interface Message {
 }
 
 export default function Chat() {
+ const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const { data: session } = useSession();
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
+  const url = session ? "http://localhost:5000/paidQuery" : "http://localhost:5000/query";
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -47,7 +50,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/query", {
+      const response = await axios.post(url, {
         query: input,
       });
       console.log(response.data);
@@ -77,17 +80,41 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="flex h-screen flex-col bg-linear-to-br from-slate-50 to-slate-100">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-         <div className="flex items-center space-x-2">
-                    <Image src="/logo.jpg" alt="jassaiPass Logo" width={32} height={32} />
-                    <span className="text-2xl font-bold text-foreground">jassaiPass</span>
-                  </div>
-          <p className="mt-1 text-sm text-slate-600">
-            Ask questions about your course materials
-          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Image src="/logo.jpg" alt="jassaiPass Logo" width={32} height={32} />
+              <span className="text-2xl font-bold text-foreground">jassaiPass</span>
+            </div>
+            {!session?.user && (
+              <Button onClick={() => router.push("/login")}>
+                Login
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-sm text-slate-600">
+              Ask questions about your course materials <br/>
+              {session?.user ? <span> as {session.user.email}</span> : 
+                <span>
+                no logged in
+                </span>
+              }
+            </p>
+            {session?.user && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut()}
+                className="ml-2"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -118,64 +145,42 @@ export default function Chat() {
                     className={`max-w-2xl rounded-lg px-4 py-3 ${
                       message.type === "user"
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-slate-900 shadow"
+                        : "bg-white text-slate-900 shadow-md"
                     }`}
                   >
-                    {typeof message.content === "string" ? (
-                      message.type === "assistant" ? (
-                        <div className="prose prose-slate max-w-none text-sm sm:text-base">
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="text-sm sm:text-base">{message.content}</p>
-                      )
-                    ) : message.content.description ? (
-                      <div className="space-y-3 text-sm sm:text-base">
-                        <p className="text-slate-700">{message.content.description}</p>
-                        {Array.isArray(message.content.sections) && (
-                          <div className="space-y-2">
-                            {message.content.sections.map((section: any, idx: number) => (
-                              <div key={idx}>
-                                <h4 className="font-semibold text-slate-700">
-                                  {section.title}
-                                </h4>
-                                <p className="text-slate-600">{section.text}</p>
-                              </div>
-                            ))}
+                    {message.type === "user" ? (
+                      <p className="text-sm sm:text-base">
+                        {typeof message.content === "string" ? message.content : JSON.stringify(message.content)}
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Topic Header */}
+                        {message.topic && (
+                          <div className="border-b border-slate-200 pb-2">
+                            <h3 className="text-base font-semibold text-blue-700">
+                              {message.topic}
+                            </h3>
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      <div className="space-y-2 text-sm sm:text-base">
-                        {Object.entries(message.content).map(([key, value]) => (
-                          <div key={key}>
-                            <h4 className="font-semibold text-slate-700">
-                              {key}
-                            </h4>
-                            {Array.isArray(value) ? (
-                              <ul className="ml-4 list-disc space-y-1">
-                                {value.map((item, idx) => (
-                                  <li key={idx} className="text-slate-600">
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-slate-600">{value}</p>
-                            )}
+                        
+                        {/* Answer Content */}
+                        <div className="text-sm sm:text-base leading-relaxed text-slate-700">
+                          {typeof message.content === "string" ? (
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{JSON.stringify(message.content, null, 2)}</p>
+                          )}
+                        </div>
+
+                        {/* Sources Footer */}
+                        {message.sources && (
+                          <div className="mt-3 border-t border-slate-200 pt-3">
+                            <p className="text-xs text-slate-500">
+                              <span className="font-semibold text-slate-600">Sources:</span>{" "}
+                              <span className="text-slate-500">{message.sources || "None"}</span>
+                            </p>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {message.type === "assistant" && message.sources && (
-                      <div className="mt-3 border-t border-slate-200 pt-3">
-                        <p className="text-xs font-semibold text-slate-600">
-                          Topic: {message.topic}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          <span className="font-semibold">Sources:</span>{" "}
-                          {message.sources}
-                        </p>
+                        )}
                       </div>
                     )}
                   </div>
